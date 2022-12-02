@@ -1,0 +1,5 @@
+name: WorldManager
+api: [4.0.0]
+author: Sesh
+version: 1.0
+main: sesh\worldmanager\WorldManager
