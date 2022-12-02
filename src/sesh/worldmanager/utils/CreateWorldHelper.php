@@ -5,8 +5,10 @@ namespace sesh\worldmanager\utils;
 
 
 use pocketmine\world\generator\GeneratorManager;
+use pocketmine\world\World;
 use pocketmine\world\WorldCreationOptions;
 use sesh\worldmanager\WorldManager;
+
 
 
 
@@ -42,16 +44,16 @@ class CreateWorldHelper
         $opts->setGeneratorClass($gen->getGeneratorClass());
 
 
-        $server->getWorldManager()->generateWorld($name, $opts, false);
+        $server->getWorldManager()->generateWorld($name, $opts, true);
 
         $w = ["name" => $name, "loaded" => $autoload];
 
         if (!$autoload && $server->getWorldManager()->isWorldLoaded($name))
             $server->getWorldManager()->unloadWorld($server->getWorldManager()->getWorldByName($name));
         if ($autoload)
-            $w["world"] = $server->getWorldManager()->getWorld($name);
+            $w["world"] = $server->getWorldManager()->getWorldByName($name);
 
-        WorldManager::$Worlds[] = $w;
+        WorldManager::$Worlds[$name] = $w;
 
         return new CreateWorldReturn(true, null);
     }
@@ -66,7 +68,11 @@ class CreateWorldHelper
             return new CreateWorldReturn(false, "$name is not loaded, cannot unload.");
         }
 
-        WorldManager::getInstance()->getServer()->getWorldManager()->unloadWorld(WorldManager::getWorldNames()[$name]["world"]);
+        if (WorldManager::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getFolderName() == $name) {
+            return new CreateWorldReturn(false, "Can't unload default world.");
+        }
+
+        WorldManager::getInstance()->getServer()->getWorldManager()->unloadWorld(WorldManager::getWorlds()[$name]["world"]);
 
         return new CreateWorldReturn(true);
     }
@@ -146,5 +152,27 @@ class CreateWorldHelper
                 copy($dir . "/" . $file, $newDir . "/" . $file);
             }
         }
+    }
+
+
+    static function TextureFromGenerator(string $gen)
+    {
+        $texture = "";
+        switch ($gen) {
+            case "void":
+                $texture = "textures/blocks/concrete_black.png";
+                break;
+            case "nether":
+            case "hell":
+                $texture = "textures/blocks/netherrack.png";
+                break;
+            case "normal":
+            case "flat":
+                $texture = "textures/blocks/grass_side_carried.png";
+                break;
+            default:
+                break;
+        }
+        return $texture;
     }
 }

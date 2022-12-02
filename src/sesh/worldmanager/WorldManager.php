@@ -4,7 +4,7 @@ namespace sesh\worldmanager;
 
 use Error;
 use pocketmine\plugin\PluginBase;
-use pocketmine\utils\SingletonTrait;
+use pocketmine\world\World;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\generator\GeneratorManager;
 
@@ -36,6 +36,10 @@ class WorldManager extends PluginBase
     }
 
 
+    /**
+     * 
+     * @return array{name: array{name: string, loaded: bool, world: World}}
+     */
     public static function getWorlds(): array
     {
         return self::$Worlds;
