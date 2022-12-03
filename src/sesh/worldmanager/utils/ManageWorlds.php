@@ -5,14 +5,10 @@ namespace sesh\worldmanager\utils;
 
 
 use pocketmine\world\generator\GeneratorManager;
-use pocketmine\world\World;
 use pocketmine\world\WorldCreationOptions;
 use sesh\worldmanager\WorldManager;
 
-
-
-
-class CreateWorldReturn
+class ManageWorldsReturn
 {
     public function __construct(public bool $success, public ?string $error = null)
     {
@@ -25,21 +21,21 @@ class CreateWorldReturn
     }
 }
 
-class CreateWorldHelper
+class ManageWorlds
 {
-    static function CreateWorld(string $name, string $type = "normal", bool $autoload = false): CreateWorldReturn
+    static function CreateWorld(string $name, string $type = "normal", bool $autoload = false): ManageWorldsReturn
     {
         $worlds = WorldManager::getWorldNames();
 
         if (in_array($name, $worlds)) {
-            return new CreateWorldReturn(false, "World already exists with name " . $name);
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::NAME_EXISTS, $name));
         }
 
         $server = WorldManager::getInstance()->getServer();
         $opts = new WorldCreationOptions();
         $gen = GeneratorManager::getInstance()->getGenerator($type);
         if ($gen == null)
-            return new CreateWorldReturn(false, "$type is not a valid generator.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::INVALID_GENERATOR, $type));
 
         $opts->setGeneratorClass($gen->getGeneratorClass());
 
@@ -55,44 +51,44 @@ class CreateWorldHelper
 
         WorldManager::$Worlds[$name] = $w;
 
-        return new CreateWorldReturn(true, null);
+        return new ManageWorldsReturn(true, null);
     }
 
-    static function UnloadWorld(string $name): CreateWorldReturn
+    static function UnloadWorld(string $name): ManageWorldsReturn
     {
         if (!in_array($name, WorldManager::getWorldNames())) {
-            return new CreateWorldReturn(false, "$name is not a valid world.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::INVALID_WORLD, $name));
         }
 
         if (!WorldManager::getWorlds()[$name]["loaded"]) {
-            return new CreateWorldReturn(false, "$name is not loaded, cannot unload.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::NOT_LOADED, $name));
         }
 
         if (WorldManager::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getFolderName() == $name) {
-            return new CreateWorldReturn(false, "Can't unload default world.");
+            return new ManageWorldsReturn(false, ManageWorldsError::UNLOAD_DEFAULT);
         }
 
         WorldManager::getInstance()->getServer()->getWorldManager()->unloadWorld(WorldManager::getWorlds()[$name]["world"]);
 
-        return new CreateWorldReturn(true);
+        return new ManageWorldsReturn(true);
     }
 
-    static function LoadWorld(string $name): CreateWorldReturn
+    static function LoadWorld(string $name): ManageWorldsReturn
     {
         if (!in_array($name, WorldManager::getWorldNames())) {
-            return new CreateWorldReturn(false, "$name is not a valid world.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::INVALID_WORLD, $name));
         }
 
         if (WorldManager::getWorlds()[$name]["loaded"]) {
-            return new CreateWorldReturn(false, "$name is already loaded, cannot load.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::ALREADY_LOADED, $name));
         }
 
         WorldManager::getInstance()->getServer()->getWorldManager()->loadWorld($name);
 
-        return new CreateWorldReturn(true);
+        return new ManageWorldsReturn(true);
     }
 
-    static function CloneWorld(string $name, string $newName, bool $autoload = false): CreateWorldReturn
+    static function CloneWorld(string $name, string $newName, bool $autoload = false): ManageWorldsReturn
     {
         $server = WorldManager::getInstance()->getServer();
         $worlds = WorldManager::getWorldNames();
@@ -101,15 +97,15 @@ class CreateWorldHelper
 
 
         if (!in_array($name, $worlds)) {
-            return new CreateWorldReturn(false, "Attempt to clone world " . $name . " but that world does not exist.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::INVALID_WORLD, $name));
         }
 
         if (in_array($newName, $worlds)) {
-            return new CreateWorldReturn(false, "Attempt to clone world " . $name . " with name " . $newName . " but a world with that name already exists.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::NAME_EXISTS, $name));
         }
 
         if (file_exists($worldsDir . "/" . $newName) && is_dir($worldsDir . "/" . $newName)) {
-            return new CreateWorldReturn(false, "Directory already exists with name " . $newName . ", while trying to clone world.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::DIR_EXISTS, $newName));
         }
 
 
@@ -122,21 +118,24 @@ class CreateWorldHelper
             $w = ["name" => $newName, "loaded" => false];
             WorldManager::$Worlds[$newName] = $w;
         }
-        return new CreateWorldReturn(true);
+        return new ManageWorldsReturn(true);
     }
 
-    static function DeleteWorld(string $world): CreateWorldReturn
+    static function DeleteWorld(string $world): ManageWorldsReturn
     {
         $worlds = WorldManager::getWorldNames();
         $worldDir = WorldManager::getInstance()->getServer()->getDataPath() . "worlds";
 
         if (!in_array($world, $worlds)) {
-            return new CreateWorldReturn(false, "World " . $world . " does not exist.");
+            return new ManageWorldsReturn(false, ManageWorldsError::Error(ManageWorldsError::INVALID_WORLD, $world));
         }
         //😱
         shell_exec("rm -rf '$worldDir/$world'");
 
-        return new CreateWorldReturn(true);
+
+        unset(WorldManager::$Worlds[$world]);
+
+        return new ManageWorldsReturn(true);
     }
 
 

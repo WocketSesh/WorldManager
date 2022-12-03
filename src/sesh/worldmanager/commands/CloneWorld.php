@@ -2,11 +2,10 @@
 
 namespace sesh\worldmanager\commands;
 
-use pocketmine\form\Form;
-use pocketmine\player\Player;
+
 use pocketmine\utils\TextFormat;
 use sesh\worldmanager\utils\ACommand;
-use sesh\worldmanager\utils\CreateWorldHelper;
+use sesh\worldmanager\utils\ManageWorlds;
 
 class CloneWorld extends ACommand
 {
@@ -14,7 +13,7 @@ class CloneWorld extends ACommand
 
     public function __construct()
     {
-        parent::__construct("clone", "Clones a world.", "/wm clone <name> <world> [autoload]", ["cl"]);
+        parent::__construct("clone", "Clones a world.", "/wm clone <world> <name> [autoload]", ["cl"]);
     }
 
 
@@ -27,11 +26,11 @@ class CloneWorld extends ACommand
             return;
         }
 
-        $name = $args[0];
-        $world = $args[1];
+        $world = $args[0];
+        $name = $args[1];
         $autoload = $args[2] ?? false;
 
-        $cloned = CreateWorldHelper::CloneWorld($world, $name, $autoload);
+        $cloned = ManageWorlds::CloneWorld($world, $name, $autoload);
 
         if ($cloned->didError()) {
             $sender->sendMessage(TextFormat::RED . $cloned->error);

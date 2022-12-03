@@ -4,7 +4,7 @@ namespace sesh\worldmanager\commands;
 
 use pocketmine\utils\TextFormat;
 use sesh\worldmanager\utils\ACommand;
-use sesh\worldmanager\utils\CreateWorldHelper;
+use sesh\worldmanager\utils\ManageWorlds;
 
 
 class UnloadWorld extends ACommand
@@ -25,7 +25,7 @@ class UnloadWorld extends ACommand
 
         $world = $args[0];
 
-        $unloaded = CreateWorldHelper::UnloadWorld($world);
+        $unloaded = ManageWorlds::UnloadWorld($world);
 
         if ($unloaded->didError()) {
             $sender->sendMessage(TextFormat::RED . $unloaded->error);

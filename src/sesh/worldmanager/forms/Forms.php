@@ -12,8 +12,7 @@ use sesh\formsapi\elements\Input;
 use sesh\formsapi\elements\Toggle;
 use sesh\formsapi\forms\CustomForm;
 use sesh\formsapi\forms\SimpleForm;
-use sesh\worldmanager\commands\CreateWorld;
-use sesh\worldmanager\utils\CreateWorldHelper;
+use sesh\worldmanager\utils\ManageWorlds;
 use sesh\worldmanager\WorldManager;
 
 
@@ -61,7 +60,7 @@ class Forms
 
             if ($world["loaded"]) {
                 $gen = $world["world"]->getProvider()->getWorldData()->getGenerator();
-                $b->setImage(new Image(CreateWorldHelper::TextureFromGenerator($gen), Image::PATH_TYPE));
+                $b->setImage(new Image(ManageWorlds::TextureFromGenerator($gen), Image::PATH_TYPE));
             }
             $form->addButton($b);
         }
@@ -141,6 +140,20 @@ class Forms
 
     public static function ShowCloneWorldForm(Player $player)
     {
+        $form = new CustomForm("Clone World");
+        $form->addInput(new Input("New Name", null, "New Name"));
+        $form->addDropdown(new Dropdown("World To Clone", array_values(WorldManager::getWorldNames()), 0));
+        $form->addToggle(new Toggle("Auto Load", false));
 
+
+        $form->onClick(function (Player $player, CustomForm $response) {
+            $newName = $response->getInput(0)->getText();
+            $toClone = $response->getDropdown(1)->getSelected();
+            $autoload = $response->getToggle(2)->isToggled();
+
+            WorldManager::getInstance()->getServer()->dispatchCommand($player, "wm clone " . $toClone . " " . $newName . " " . $autoload);
+        });
+
+        $player->sendForm($form);
     }
 }

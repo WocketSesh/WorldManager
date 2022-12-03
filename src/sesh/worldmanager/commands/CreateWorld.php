@@ -4,10 +4,9 @@ namespace sesh\worldmanager\commands;
 
 use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat;
-use pocketmine\world\generator\Generator;
 use pocketmine\world\generator\GeneratorManager;
 use sesh\worldmanager\utils\ACommand;
-use sesh\worldmanager\utils\CreateWorldHelper;
+use sesh\worldmanager\utils\ManageWorlds;
 
 class CreateWorld extends ACommand
 {
@@ -39,7 +38,7 @@ class CreateWorld extends ACommand
             return;
         }
 
-        $created = CreateWorldHelper::CreateWorld($name, $type, $autoload);
+        $created = ManageWorlds::CreateWorld($name, $type, $autoload);
 
         if ($created->didError()) {
             $sender->sendMessage(TextFormat::RED . $created->error);

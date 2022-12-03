@@ -4,7 +4,7 @@ namespace sesh\worldmanager\commands;
 
 use pocketmine\utils\TextFormat;
 use sesh\worldmanager\utils\ACommand;
-use sesh\worldmanager\utils\CreateWorldHelper;
+use sesh\worldmanager\utils\ManageWorlds;
 
 
 class DeleteWorld extends ACommand
@@ -25,7 +25,7 @@ class DeleteWorld extends ACommand
 
         $world = $args[0];
 
-        $deleted = CreateWorldHelper::DeleteWorld($world);
+        $deleted = ManageWorlds::DeleteWorld($world);
 
         if ($deleted->didError()) {
             $sender->sendMessage(TextFormat::RED . $deleted->error);

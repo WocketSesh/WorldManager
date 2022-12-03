@@ -4,7 +4,7 @@ namespace sesh\worldmanager\commands;
 
 use pocketmine\utils\TextFormat;
 use sesh\worldmanager\utils\ACommand;
-use sesh\worldmanager\utils\CreateWorldHelper;
+use sesh\worldmanager\utils\ManageWorlds;
 
 
 class LoadWorld extends ACommand
@@ -25,7 +25,7 @@ class LoadWorld extends ACommand
 
         $world = $args[0];
 
-        $loaded = CreateWorldHelper::LoadWorld($world);
+        $loaded = ManageWorlds::LoadWorld($world);
 
         if ($loaded->didError()) {
             $sender->sendMessage(TextFormat::RED . $loaded->error);
